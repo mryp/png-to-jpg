@@ -24,6 +24,11 @@ namespace PngToJpg
             }
         }
 
+        /// <summary>
+        /// 画像に変換する画像ファイルの拡張子リスト
+        /// </summary>
+        private static readonly string[] _imageExtList = { ".png", ".bmp", ".gif" };
+
         public MainForm()
         {
             InitializeComponent();
@@ -90,15 +95,16 @@ namespace PngToJpg
             }
 
             Log.Info($"処理開始 param={param}");
-            var fileList = Directory.GetFiles(param.FolderPath, "*.png", SearchOption.AllDirectories);
-            if (fileList.Length == 0)
+            var fileList = Directory.GetFiles(param.FolderPath, "*.*", SearchOption.AllDirectories).Where(
+                file => _imageExtList.Any(ext => file.ToLower().EndsWith(ext)));
+            if (!fileList.Any())
             {
-                Log.Warn("フォルダ内にPNGファイルが見つからない");
-                e.Result = "指定されたフォルダ内にPNGファイルが見つかりません";
+                Log.Warn("フォルダ内に画像ファイルが見つからない");
+                e.Result = "指定されたフォルダ内に画像ファイルが見つかりません";
                 return;
             }
 
-            worker.ReportProgress(fileList.Length);
+            worker.ReportProgress(fileList.Count());
             var pos = 0;
             var successCount = 0;
             var errorCount = 0;
